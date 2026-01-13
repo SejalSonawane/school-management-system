@@ -1,0 +1,86 @@
+// Teacher Charts - White + Blue Theme
+$primary-blue: #0B63E5;
+$secondary-blue: #1D9BF0;
+$bg-white: #FFFFFF;
+$text-dark: #0A2540;
+$text-light: #6B7280;
+$border-color: #E5E7EB;
+$bg-light: #F9FAFB;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+// container sits inside teacher-main-content
+.teacher-charts-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// optional helper if you use it in JSX
+.teacher-main-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.charts-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+
+  label {
+    font-weight: 600;
+    color: $text-dark;
+    font-size: 14px;
+  }
+
+  .form-control {
+    width: 220px;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: $text-dark;
+    background: white;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-blue;
+      box-shadow: 0 0 0 3px rgba(11, 99, 229, 0.1);
+    }
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: $bg-white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: $shadow-sm;
+  border: 1px solid $border-color;
+
+  h4 {
+    margin: 0 0 20px 0;
+    color: $text-dark;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+.charts-loading {
+  text-align: center;
+  padding: 40px 0;
+  color: $text-light;
+  font-size: 14px;
+}

@@ -1,0 +1,596 @@
+const pool = require('../config/db');
+
+// Create a new form with questions (admin)
+exports.createForm = async (req, res) => {
+  const { title, description, receiver_role, deadline, questions } = req.body;
+  const created_by = req.user.id;
+
+  if (!title || !receiver_role || !deadline || !questions || !Array.isArray(questions)) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const formResult = await client.query(
+      `INSERT INTO forms (title, description, created_by, receiver_role, deadline) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [title, description, created_by, receiver_role, deadline]
+    );
+    const formId = formResult.rows[0].id;
+
+    // Insert questions
+    for (const q of questions) {
+      await client.query(
+        `INSERT INTO form_questions (form_id, question_text, question_type, options)
+         VALUES ($1, $2, $3, $4)`,
+        [formId, q.question_text, q.question_type, q.options || null]
+      );
+    }
+    await client.query('COMMIT');
+    res.status(201).json({ success: true, form: formResult.rows[0] });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error("CreateForm error:", err);
+    res.status(500).json({ error: "Failed to create form" });
+  } finally {
+    client.release();
+  }
+};
+
+// Admin: Get all filled form data, joined in a single result
+exports.getAllFormResponsesDetailed = async (req, res) => {
+  try {
+    const query = `
+      SELECT
+       f.id AS form_id,
+       f.title AS form_title,
+       fr.id AS response_id,
+       fr.submitted_at,
+       u.id AS submitted_by_id,
+       COALESCE(s.full_name, p.full_name) AS submitted_by_name,
+       u.role AS submitted_by_role,
+       un.unit_id AS unit_id,
+       un.kendrashala_name AS unit_name,
+       fq.id AS question_id,
+       fq.question_text,
+       fq.question_type,
+       fa.answer
+      FROM form_answers fa
+       JOIN form_questions fq ON fa.question_id = fq.id
+       JOIN form_responses fr ON fa.response_id = fr.id
+       JOIN forms f ON fr.form_id = f.id
+       JOIN "Users" u ON fr.submitted_by = u.id
+       LEFT JOIN staff s ON s.user_id = u.id
+       LEFT JOIN principal p ON p.user_id = u.id
+       JOIN unit un ON fr.school_id = un.unit_id
+      ORDER BY fa.id DESC
+    `;
+    const result = await pool.query(query);
+    res.json({ data: result.rows });
+  } catch (err) {
+    console.error('Error fetching all form responses (detailed):', err);
+    res.status(500).json({ message: 'Failed to retrieve form responses (detailed)' });
+  }
+};
+
+// Get all active forms for a role (for principal/teacher view)
+exports.getActiveForms = async (req, res) => {
+  const { role } = req.query; // 'principal' or 'teacher'
+  const now = new Date();
+
+  try {
+    const formsRes = await pool.query(
+      `SELECT * FROM forms 
+       WHERE receiver_role=$1 AND is_active=TRUE AND deadline > $2
+       ORDER BY created_at DESC`,
+      [role, now]
+    );
+    res.json(formsRes.rows);
+  } catch (err) {
+    console.error("getActiveForms error:", err);
+    res.status(500).json({ error: "Failed to fetch forms" });
+  }
+};
+
+// Get form questions for a given form
+exports.getFormQuestions = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    const questionsRes = await pool.query(
+      `SELECT * FROM form_questions WHERE form_id = $1`,
+      [formId]
+    );
+    res.json(questionsRes.rows);
+  } catch (err) {
+    console.error("getFormQuestions error:", err);
+    res.status(500).json({ error: "Failed to fetch questions" });
+  }
+};
+
+// Submit a filled form with deadline enforcement
+exports.submitFormResponse = async (req, res) => {
+  const { formId } = req.params;
+  const { answers } = req.body;
+
+  console.log("submitFormResponse:", { user: req.user, formId, answers });
+
+  let school_id = req.user?.school_id;
+  if (!school_id && req.user.unit_id) {
+    school_id = req.user.unit_id;
+  }
+  const submitted_by = req.user?.id;
+
+  if (!school_id || !submitted_by) {
+    return res.status(400).json({ error: "Missing user or school context." });
+  }
+  if (!answers || !Array.isArray(answers) || answers.length === 0) {
+    return res.status(400).json({ error: "Answers required and should not be empty." });
+  }
+  for (const ans of answers) {
+    if (!ans.question_id || typeof ans.answer === "undefined") {
+      return res.status(400).json({ error: "Malformed question or answer." });
+    }
+  }
+
+  // Deadline check to reject submission if expired
+  try {
+    const formRes = await pool.query('SELECT deadline FROM forms WHERE id = $1', [formId]);
+    if (formRes.rowCount === 0) {
+      return res.status(404).json({ error: "Form not found." });
+    }
+    const deadline = new Date(formRes.rows[0].deadline);
+    const now = new Date();
+    if (now > deadline) {
+      return res.status(400).json({ error: "This form has expired. Deadline has passed." });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: "Form deadline check failed." });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const respRes = await client.query(
+      `INSERT INTO form_responses (form_id, school_id, submitted_by) 
+       VALUES ($1, $2, $3) RETURNING *`,
+      [formId, school_id, submitted_by]
+    );
+    const responseId = respRes.rows[0].id;
+    for (const ans of answers) {
+      await client.query(
+        `INSERT INTO form_answers (response_id, question_id, answer)
+         VALUES ($1, $2, $3)`,
+        [responseId, ans.question_id, ans.answer]
+      );
+    }
+    await client.query('COMMIT');
+    res.status(201).json({ success: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error("submitFormResponse error:", err);
+    res.status(500).json({ error: "Failed to submit response" });
+  } finally {
+    client.release();
+  }
+};
+
+// Other controller methods remain unchanged...
+
+
+exports.getAllFormResponses = async (req, res) => {
+  try {
+    // Adjust table/column names to match your schema
+    const result = await pool.query('SELECT * FROM form_answers ORDER BY submitted_at DESC');
+    // You can join other tables for more details if needed
+    res.json({ data: result.rows });
+  } catch (err) {
+    console.error('Error fetching form responses:', err);
+    res.status(500).json({ message: 'Failed to retrieve form responses' });
+  }
+};
+
+// Get all responses for a form (admin/creator view)
+exports.getFormResponses = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    // Get responses, then answers for each response
+    const respRes = await pool.query(
+      `SELECT * FROM form_responses WHERE form_id = $1`,
+      [formId]
+    );
+    const responses = respRes.rows;
+    for (let response of responses) {
+      const answersRes = await pool.query(
+        `SELECT fa.*, fq.question_text, fq.question_type 
+         FROM form_answers fa
+         JOIN form_questions fq ON fa.question_id = fq.id
+         WHERE fa.response_id = $1`,
+        [response.id]
+      );
+      response.answers = answersRes.rows;
+    }
+    res.json(responses);
+  } catch (err) {
+    console.error("getFormResponses error:", err);
+    res.status(500).json({ error: "Failed to fetch responses" });
+  }
+};
+
+// Discard/Deactivate a form
+exports.deactivateForm = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    await pool.query(
+      `UPDATE forms SET is_active = FALSE WHERE id = $1`,
+      [formId]
+    );
+    res.json({ success: true, message: "Form deactivated" });
+  } catch (err) {
+    console.error("deactivateForm error:", err);
+    res.status(500).json({ error: "Failed to deactivate form" });
+  }
+};
+// ADD THIS if it does not exist!
+exports.getFormById = async (req, res) => {
+  try {
+    const { formId } = req.params;
+    const formRes = await pool.query('SELECT * FROM forms WHERE id = $1', [formId]);
+    if (formRes.rowCount === 0) {
+      return res.status(404).json({ error: "Form not found." });
+    }
+    res.json(formRes.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch form." });
+  }
+};
+
+// ...rest of your code (analytics, units, students) remains the same...
+
+exports.getUnitAnalytics = async (req, res) => {
+  const { unitId } = req.params;
+  try {
+    // Admissions per year
+    const admissionsRes = await pool.query(`
+      SELECT EXTRACT(YEAR FROM admission_date) AS year, COUNT(*) AS count
+      FROM students WHERE unit_id = $1 GROUP BY year ORDER BY year
+    `, [unitId]);
+
+    // Students by standard
+    const classRes = await pool.query(`
+      SELECT standard, COUNT(*) AS count
+      FROM enrollments e
+      JOIN students s ON e.student_id = s.student_id
+      WHERE s.unit_id = $1
+      GROUP BY standard ORDER BY standard
+    `, [unitId]);
+
+    // Payments categories per fiscal year
+    const paymentsRes = await pool.query(`
+      SELECT fiscal_year, category, SUM(amount) AS total
+      FROM unit_payments
+      WHERE unit_id = $1
+      GROUP BY fiscal_year, category
+      ORDER BY fiscal_year, category
+    `, [unitId]);
+
+    // Budgets per year/version
+    const budgetsRes = await pool.query(`
+      SELECT * FROM unit_budgets WHERE unit_id = $1 ORDER BY fiscal_year
+    `, [unitId]);
+
+    // All students (for gender/pass charts)
+    const studentsRes = await pool.query(`
+      SELECT s.student_id, s.full_name, s.gender, s.admission_date,
+             e.standard, e.academic_year, e.passed
+      FROM students s
+      JOIN enrollments e ON s.student_id = e.student_id
+      WHERE s.unit_id = $1
+    `, [unitId]);
+
+    res.json({
+      admissions: admissionsRes.rows,
+      studentsByClass: classRes.rows,
+      payments: paymentsRes.rows,
+      budgets: budgetsRes.rows,
+      allStudents: studentsRes.rows
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to load analytics." });
+  }
+};
+exports.getUnits = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        u.unit_id,
+        u.kendrashala_name,
+        (SELECT COUNT(DISTINCT staff_id) FROM staff WHERE staff.unit_id = u.unit_id) AS staff_count,
+        (SELECT COUNT(DISTINCT student_id) FROM students WHERE students.unit_id = u.unit_id) AS student_count
+      FROM unit u
+      ORDER BY u.kendrashala_name
+    `);
+    
+    // Ensure counts are returned as integers
+    const rows = result.rows.map(row => ({
+      ...row,
+      staff_count: parseInt(row.staff_count, 10) || 0,
+      student_count: parseInt(row.student_count, 10) || 0
+    }));
+    
+    res.json(rows);
+  } catch (err) {
+    console.error('Error in getUnits:', err);
+    res.status(500).json({ error: err.message || 'Failed to fetch units.' });
+  }
+};
+
+
+
+exports.getUnitById = async (req, res) => {
+  try {
+    const { unitId } = req.params;
+    const unitResult = await pool.query('SELECT * FROM unit WHERE unit_id=$1', [unitId]);
+    if (unitResult.rowCount === 0)
+      return res.status(404).json({ error: "Unit not found" });
+
+    const teachersResult = await pool.query(
+      `SELECT staff_id, full_name, email, phone, qualification, designation, subject, joining_date, updatedat
+       FROM staff WHERE unit_id = $1 AND staff_type = 'teaching'`, [unitId]);
+    const paymentsResult = await pool.query(
+      'SELECT * FROM unit_payments WHERE unit_id = $1 ORDER BY fiscal_year, category', [unitId]
+    );
+    const budgetsResult = await pool.query(
+      'SELECT * FROM unit_budgets WHERE unit_id = $1 ORDER BY fiscal_year, version', [unitId]
+    );
+    const banksResult = await pool.query(
+      'SELECT * FROM unit_banks WHERE unit_id = $1 ORDER BY bank_id', [unitId]
+    );
+    const casesResult = await pool.query(
+      'SELECT * FROM unit_cases WHERE unit_id = $1 ORDER BY id', [unitId]
+    );
+    const studentsResult = await pool.query(
+      `SELECT s.student_id, s.full_name, s.dob, s.gender, s.address, s.parent_name, s.parent_phone, s.admission_date,
+              e.standard, e.division, e.roll_number, e.academic_year, e.passed, s.createdat, s.updatedat
+         FROM students s
+         JOIN enrollments e ON s.student_id = e.student_id
+        WHERE s.unit_id = $1
+        ORDER BY e.academic_year DESC, e.roll_number`,
+      [unitId]
+    );
+
+    res.json({
+      ...unitResult.rows[0],
+      teachers: teachersResult.rows,
+      students: studentsResult.rows,
+      payments: paymentsResult.rows,
+      budgets: budgetsResult.rows,
+      banks: banksResult.rows,
+      cases: casesResult.rows
+    });
+  } catch (err) {
+    console.error("Error in getUnitById:", err);
+    res.status(500).json({ error: err.message || "Failed to load unit detail." });
+  }
+};
+// Get all teaching staff for a unit
+exports.getUnitTeachers = async (req, res) => {
+  try {
+    const { unitId } = req.params;
+    const result = await pool.query(
+      `SELECT staff_id, full_name, email, phone, qualification, 
+              designation, subject, joining_date, updatedat
+       FROM staff 
+       WHERE unit_id = $1 AND staff_type = 'teaching'`,
+      [unitId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error in getUnitTeachers:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get all students for a unit (with enrollments info)
+exports.getUnitStudents = async (req, res) => {
+  try {
+    const { unitId } = req.params;
+    const result = await pool.query(
+      `SELECT s.student_id, s.full_name, s.dob, s.gender, s.address, s.parent_name, s.parent_phone, s.admission_date,
+              e.standard, e.division, e.roll_number, e.academic_year, e.passed, s.createdat, s.updatedat
+         FROM students s
+         JOIN enrollments e ON s.student_id = e.student_id
+        WHERE s.unit_id = $1
+        ORDER BY e.academic_year DESC, e.roll_number`,
+      [unitId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error in getUnitStudents:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.listSimpleUnits = async (req, res) => {
+  try {
+    // Use the correct columns!
+    const result = await pool.query(
+      "SELECT unit_id, kendrashala_name AS unit_name FROM unit ORDER BY kendrashala_name"
+    );
+     res.json(result.rows); // array
+// This shape matches your frontend!
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch units" });
+  }
+};
+// helper: academic / fiscal year strings
+function getCurrentAcademicYear() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0 = Jan
+  if (month >= 3) {
+    return `${year}-${(year + 1).toString().slice(-2)}`;
+  } else {
+    return `${year - 1}-${year.toString().slice(-2)}`;
+  }
+}
+
+function getCurrentFiscalYear() {
+  return getCurrentAcademicYear();
+}
+
+// Finance + high‑level counts for a given unit (for admin dashboard)
+exports.getUnitDashboardData = async (req, res) => {
+  try {
+    const { unitId } = req.params;
+    const currentAy = getCurrentAcademicYear();
+    const currentFy = getCurrentFiscalYear();
+
+    // 1) Unit info
+    const unitRes = await pool.query(
+      `SELECT 
+         unit_id, semis_no, dcf_no, nmms_no, scholarship_code,
+         first_grant_in_aid_year, type_of_management, school_jurisdiction,
+         competent_authority_name, authority_number, authority_zone,
+         kendrashala_name, info_authority_name, appellate_authority_name,
+         midday_meal_org_name, midday_meal_org_contact, standard_range,
+         headmistress_name, headmistress_phone, headmistress_email, school_shift
+       FROM unit
+       WHERE unit_id = $1`,
+      [unitId]
+    );
+    if (unitRes.rows.length === 0) {
+      return res.status(404).json({ message: "Unit not found" });
+    }
+    const unit = unitRes.rows[0];
+
+    // 2) Teacher count
+    const teacherCountRes = await pool.query(
+      "SELECT COUNT(*) FROM staff WHERE unit_id = $1 AND staff_type = $2",
+      [unitId, "teaching"]
+    );
+    const teacherCount = parseInt(teacherCountRes.rows[0].count, 10);
+
+    // 3) Student count
+    const studentCountRes = await pool.query(
+      "SELECT COUNT(*) FROM students WHERE unit_id = $1",
+      [unitId]
+    );
+    const studentCount = parseInt(studentCountRes.rows[0].count, 10);
+
+    // 4) Expected & collected fees for current AY
+    const expectedFeesRes = await pool.query(
+      `SELECT COALESCE(SUM(fee_amount), 0) AS total
+       FROM fee_master
+       WHERE unit_id = $1 AND academic_year = $2`,
+      [unitId, currentAy]
+    );
+    const expectedFees = Number(expectedFeesRes.rows[0].total) || 0;
+
+    const collectedFeesRes = await pool.query(
+      `SELECT COALESCE(SUM(paid_amount), 0) AS total
+       FROM student_fees
+       WHERE unit_id = $1 AND academic_year = $2`,
+      [unitId, currentAy]
+    );
+    const totalFeesCollected = Number(collectedFeesRes.rows[0].total) || 0;
+
+    const totalFeesPending = Math.max(expectedFees - totalFeesCollected, 0);
+
+    // 5) Salary metrics (same logic as principal)
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const salaryMonthRes = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) AS total
+       FROM salary_payments
+       WHERE unit_id = $1 AND year = $2 AND month = $3`,
+      [unitId, currentYear, currentMonth]
+    );
+    const totalSalaryPaidThisMonth =
+      Number(salaryMonthRes.rows[0].total) || 0;
+
+    const salaryAyRes = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) AS total
+       FROM salary_payments
+       WHERE unit_id = $1 AND year = $2`,
+      [unitId, currentYear]
+    );
+    const totalSalaryPaidThisYear =
+      Number(salaryAyRes.rows[0].total) || 0;
+
+    const totalBudget = expectedFees;
+    const totalSpent = totalSalaryPaidThisYear;
+    const balance = totalFeesCollected - totalSpent;
+
+    res.json({
+      unit,
+      teacherCount,
+      studentCount,
+      finance: {
+        academicYear: currentAy,
+        fiscalYear: currentFy,
+        total_budget: totalBudget,
+        total_spent: totalSpent,
+        balance,
+        expectedFees,
+        totalFeesCollected,
+        totalFeesPending,
+        totalSalaryPaidThisMonth,
+        totalSalaryPaidThisYear
+      }
+    });
+  } catch (err) {
+    console.error("Error in getUnitDashboardData:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+exports.getUnitFinanceByYear = async (req, res) => {
+  try {
+    const { unitId } = req.params;
+    const { financial_year } = req.query; // e.g. "2024-25"
+
+    if (!financial_year) {
+      return res
+        .status(400)
+        .json({ message: "financial_year query param is required" });
+    }
+
+    // 1) Total fees collected in this financial year
+    const feesRes = await pool.query(
+      `SELECT COALESCE(SUM(paid_amount), 0) AS total
+       FROM student_fees
+       WHERE unit_id = $1 AND academic_year = $2`,
+      [unitId, financial_year]
+    );
+    const feesCollectedFy = Number(feesRes.rows[0].total) || 0;
+
+    // 2) Total salary spent in this financial year
+    const startYear = parseInt(financial_year.split("-")[0], 10);
+    const endYear = startYear + 1;
+
+    const salaryRes = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) AS total
+       FROM salary_payments
+       WHERE unit_id = $1
+         AND (
+               (year = $2 AND month >= 4)   -- Apr..Dec of startYear
+            OR (year = $3 AND month <= 3)   -- Jan..Mar of endYear
+           )`,
+      [unitId, startYear, endYear]
+    );
+    const salarySpentFy = Number(salaryRes.rows[0].total) || 0;
+
+    return res.json({
+      unitId,
+      financial_year,
+      feesCollectedFy,
+      salarySpentFy
+    });
+  } catch (err) {
+    console.error("Error in getUnitFinanceByYear:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

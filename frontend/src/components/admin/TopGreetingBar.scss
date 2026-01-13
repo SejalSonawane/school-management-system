@@ -1,0 +1,97 @@
+// Color Palette
+$primary: #002E6D; // Midnight Navy
+$accent: #0057D9; // Royal Blue
+$highlight: #FFC145; // Golden Yellow
+$white: #ffffff;
+
+.premium-greeting-banner {
+  margin: 15px 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, $primary 0%, $accent 100%);
+  color: $white;
+  padding: 20px 30px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba($primary, 0.1);
+
+  .banner-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+
+    .greeting-text {
+      h1 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .divider {
+          opacity: 0.3;
+          font-weight: 300;
+        }
+
+        .subtitle {
+          font-weight: 400;
+          opacity: 0.9;
+          font-size: 16px;
+        }
+      }
+
+      .context-info {
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba($white, 0.1);
+        padding: 8px 16px;
+        border-radius: 50px;
+        width: fit-content;
+        font-weight: 500;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba($white, 0.1);
+
+        i { color: $highlight; }
+        
+        .semis-tag {
+          font-size: 12px;
+          background: $highlight;
+          color: $primary;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-weight: 700;
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+
+  .banner-visual {
+    .blob-decoration {
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba($white, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      z-index: 1;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .premium-greeting-banner {
+    padding: 30px 20px;
+    .banner-content .greeting-text h1 {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+      .divider { display: none; }
+    }
+  }
+}

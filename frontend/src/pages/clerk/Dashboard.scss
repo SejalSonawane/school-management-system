@@ -1,0 +1,209 @@
+// src/pages/clerk/Dashboard.scss
+
+// --- shared tokens ---
+$primary-blue: #003366;
+$secondary-blue: #002244;
+$bg-white: #ffffff;
+$text-dark: #1f2937;
+$text-light: #6c757d;
+$border-color: #e5e7eb;
+$bg-light: #f8f9fa;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+.dashboard-wrapper {
+  padding: 24px;
+  background: #f4f7fa;
+  min-height: calc(100vh - 120px);
+}
+
+.section-header-pro {
+  .header-icon-box {
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-color;
+  }
+  
+  h3 {
+    color: $primary-blue;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+}
+
+/* Metrics Grid Refinement */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+
+  .metric-box {
+    background: white;
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: transparent;
+      transition: background 0.3s;
+    }
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+      
+      &::before {
+        background: $primary-blue;
+      }
+    }
+
+    .metric-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .metric-info {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-size: 11px;
+        font-weight: 700;
+        color: $text-light;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .value {
+        font-size: 28px;
+        font-weight: 800;
+        color: $text-dark;
+        line-height: 1.2;
+      }
+
+      .sub-label {
+        font-size: 12px;
+        color: $text-light;
+        margin-top: 2px;
+      }
+    }
+
+    /* Color Variants */
+    &.metric-students {
+      .metric-icon { background: #eef2ff; color: #4f46e5; }
+    }
+    &.metric-staff {
+      .metric-icon { background: #fff7ed; color: #ea580c; }
+    }
+    &.metric-ratio {
+      .metric-icon { background: #f0fdf4; color: #16a34a; }
+    }
+    &.metric-fees {
+      .metric-icon { background: #faf5ff; color: #9333ea; }
+      &.highlight { border-color: #d8b4fe; }
+    }
+  }
+}
+
+/* Professional Table Enhancement */
+.professional-table {
+  th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 16px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+  }
+
+  td {
+    padding: 16px !important;
+    font-size: 14px;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    font-weight: 500;
+  }
+}
+
+/* Retirement List */
+.retirement-item {
+  transition: all 0.2s;
+  cursor: default;
+
+  &:hover {
+    background: #f8fafc !important;
+    transform: translateX(4px);
+  }
+
+  .icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+}
+
+/* Helper Classes */
+.bg-soft-primary { background: #eef2ff; }
+.bg-soft-info { background: #ecfeff; }
+.text-info { color: #0891b2; }
+
+.avatar-circle-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+.bg-white { background-color: #ffffff !important; }
+
+.erp-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  &.badge-success { background: #dcfce7; color: #166534; }
+  &.badge-danger { background: #fee2e2; color: #991b1b; }
+}
