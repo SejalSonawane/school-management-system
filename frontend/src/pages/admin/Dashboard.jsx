@@ -337,11 +337,11 @@ export default function AdminDashboard() {
   const renderReportsPage = () => {
     return (
       <div className="page-inner">
-        <AdminCard header="Generate Reports">
-          <p className="text-muted small mb-4">Select academic year and report type, then download per school</p>
+        <AdminCard header={t('admin.reports.title')}>
+          <p className="text-muted small mb-4">{t('admin.reports.selectYearType')}</p>
           <div className="row">
             <div className="col-md-6 mb-3">
-              <label className="fw-semibold small mb-1">Select Academic Year</label>
+              <label className="fw-semibold small mb-1">{t('admin.reports.selectSchoolLabel')}</label>
               <select
                 className="form-select"
                 value={selectedReportYear}
@@ -356,16 +356,16 @@ export default function AdminDashboard() {
               </select>
             </div>
             <div className="col-md-6 mb-3">
-              <label className="fw-semibold small mb-1">Select Report Type</label>
+              <label className="fw-semibold small mb-1">{t('admin.reports.selectReportType')}</label>
               <select
                 className="form-select"
                 value={reportType}
                 onChange={(e) => setReportType(e.target.value)}
               >
-                <option value="annual">Annual Academic Report</option>
-                <option value="payroll">Staff Payroll Report</option>
-                <option value="finance">Financial Allocation Report</option>
-                <option value="safety">School Safety &amp; Compliance Report</option>
+                <option value="annual">{t('admin.reports.annualAcademicReport')}</option>
+                <option value="payroll">{t('admin.reports.staffPayrollReport')}</option>
+                <option value="finance">{t('admin.reports.financialAllocationReport')}</option>
+                <option value="safety">{t('admin.reports.schoolSafetyReport')}</option>
               </select>
             </div>
           </div>
@@ -378,28 +378,28 @@ export default function AdminDashboard() {
                 {reportLoading ? (
                   <span className="spinner-border spinner-border-sm" />
                 ) : (
-                  "Fetch Schools"
+                  t('admin.reports.fetchSchools')
                 )}
               </button>
               <button
                 className="btn btn-secondary"
                 onClick={() => setSidebarTab("dashboard")}
               >
-                Go to Admin Dashboard
+                {t('admin.reports.goToDashboard')}
               </button>
             </div>
         </AdminCard>
 
         {reportSchools.length > 0 && (
           <div className="mt-4">
-            <AdminCard header="Available Schools">
+            <AdminCard header={t('admin.dashboard.availableSchools')}>
               <div className="table-responsive">
                 <table className="table table-bordered table-hover">
                   <thead>
                     <tr>
-                      <th>School</th>
-                      <th>Status</th>
-                      <th>Download</th>
+                      <th>{t('admin.common.school')}</th>
+                      <th>{t('admin.common.status')}</th>
+                      <th>{t('admin.common.download')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -413,9 +413,9 @@ export default function AdminDashboard() {
                         </td>
                         <td>
                           {school.status === "complete" ? (
-                            <span className="badge bg-success">Ready</span>
+                            <span className="badge bg-success">{t('admin.common.ready')}</span>
                           ) : (
-                            <span className="badge bg-danger">Missing</span>
+                            <span className="badge bg-danger">{t('admin.common.missing')}</span>
                           )}
                         </td>
                         <td>
@@ -424,7 +424,7 @@ export default function AdminDashboard() {
                             disabled={school.status !== "complete"}
                             onClick={() => downloadSelectedReport(school.unit_id)}
                           >
-                            Download
+                            {t('admin.common.download')}
                           </button>
                         </td>
                       </tr>
@@ -436,7 +436,7 @@ export default function AdminDashboard() {
           </div>
         )}
         {reportSchools.length === 0 && !reportLoading && (
-          <div className="text-muted mt-3">No report data found...</div>
+          <div className="text-muted mt-3">{t('admin.dashboard.noReportDataFound')}</div>
         )}
       </div>
     );
@@ -819,47 +819,47 @@ export default function AdminDashboard() {
           <div className="tab-pane-content">
             <div className="row">
               <div className="col-md-12">
-                <AdminCard header="Unit Overview Summary">
+                <AdminCard header={t('admin.dashboard.unitOverviewSummary')}>
                    <div className="metrics-grid">
                      <div className="metric-box metric-staff">
-                       <span className="label">TOTAL STAFF</span>
+                       <span className="label">{t('admin.dashboard.totalStaff')}</span>
                        <span className="value">{unitDetails.teachers?.length ?? 0}</span>
                      </div>
                      <div className="metric-box metric-students">
-                       <span className="label">TOTAL STUDENTS</span>
+                       <span className="label">{t('admin.dashboard.totalStudents')}</span>
                        <span className="value">{unitDetails.students?.length ?? 0}</span>
                      </div>
                      <div className="metric-box metric-ratio">
-                       <span className="label">RATIO</span>
+                       <span className="label">{t('admin.dashboard.ratio')}</span>
                        <span className="value">
                          {unitDetails.students?.length && unitDetails.teachers?.length
                            ? (unitDetails.students.length / unitDetails.teachers.length).toFixed(1)
                            : "0"}
                        </span>
-                       <span className="sub-label">Student/Teacher</span>
+                       <span className="sub-label">{t('admin.dashboard.studentTeacher')}</span>
                      </div>
                      <div className="metric-box metric-fees highlight">
-                       <span className="label">COLLECTED FEES</span>
+                       <span className="label">{t('admin.dashboard.collectedFees')}</span>
                        <span className="value">₹{(overviewMetrics?.feesCollectedFy ?? 0).toLocaleString()}</span>
-                       <span className="sub-label">Financial Snapshot</span>
+                       <span className="sub-label">{t('admin.dashboard.financialSnapshot')}</span>
                      </div>
                    </div>
                    
                    <div className="overview-info-strip mt-4">
                       <div className="info-item">
-                        <span className="label">Unit ID:</span>
+                        <span className="label">{t('admin.dashboard.unitID')}:</span>
                         <span className="value">{unitDetails.unit_id || "-"}</span>
                       </div>
                       <div className="info-item">
-                        <span className="label">SEMIS No:</span>
+                        <span className="label">{t('admin.dashboard.semisNo')}:</span>
                         <span className="value">{unitDetails.semis_no || "-"}</span>
                       </div>
                       <div className="info-item">
-                        <span className="label">Standards:</span>
+                        <span className="label">{t('admin.dashboard.standards')}:</span>
                         <span className="value">{unitDetails.standard_range || "-"}</span>
                       </div>
                       <div className="info-item">
-                        <span className="label">Shift:</span>
+                        <span className="label">{t('admin.dashboard.shift')}:</span>
                         <span className="value">{unitDetails.school_shift || "-"}</span>
                       </div>
                    </div>
@@ -872,11 +872,11 @@ export default function AdminDashboard() {
         {/* TAB CONTENT - Finance */}
         {selectedSchoolTab === "finance" && (
           <div className="tab-pane-content">
-             <AdminCard header="Finance Insights">
+             <AdminCard header={t('admin.dashboard.financeInsights')}>
                <div className="d-flex justify-content-between align-items-center mb-4">
                  <div>
-                   <h6 className="mb-0">Financial Metrics</h6>
-                   <p className="text-muted small mb-0">Overview of budget and expenses</p>
+                   <h6 className="mb-0">{t('admin.dashboard.financialMetrics')}</h6>
+                   <p className="text-muted small mb-0">{t('admin.dashboard.overviewBudget')}</p>
                  </div>
                  <select
                    value={selectedOverviewFy}
@@ -892,24 +892,24 @@ export default function AdminDashboard() {
                
                <div className="finance-summary-grid">
                  <div className="finance-item budget">
-                    <span className="label">BUDGET SUMMARY</span>
+                    <span className="label">{t('admin.dashboard.budgetSummary')}</span>
                     <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                    <span className="sub">Expected Fees</span>
+                    <span className="sub">{t('admin.dashboard.expectedFees')}</span>
                  </div>
                  <div className="finance-item collected">
-                    <span className="label">FEES COLLECTED</span>
+                    <span className="label">{t('admin.dashboard.feesCollected')}</span>
                     <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                    <span className="sub">Actual Amount</span>
+                    <span className="sub">{t('admin.dashboard.actualAmount')}</span>
                  </div>
                  <div className="finance-item pending">
-                    <span className="label">PENDING FEES</span>
+                    <span className="label">{t('admin.dashboard.pendingFees')}</span>
                     <span className="value">₹ {( (overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
-                    <span className="sub">To be Collected</span>
+                    <span className="sub">{t('admin.dashboard.toBeCollected')}</span>
                  </div>
                  <div className="finance-item spent">
-                    <span className="label">SALARY SPENT</span>
+                    <span className="label">{t('admin.dashboard.salarySpent')}</span>
                     <span className="value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
-                    <span className="sub">Total Payroll</span>
+                    <span className="sub">{t('admin.dashboard.totalPayroll')}</span>
                  </div>
                </div>
              </AdminCard>
@@ -925,7 +925,7 @@ export default function AdminDashboard() {
                  toolbar={
                    <Toolbar
                      left={
-                       <h6 className="mb-0 text-dark fw-bold">Staff Directory</h6>
+                       <h6 className="mb-0 text-dark fw-bold">{t('admin.tables.staffDirectory')}</h6>
                      }
                      right={
                        <div className="d-flex align-items-center gap-3">
@@ -934,7 +934,7 @@ export default function AdminDashboard() {
                            <input
                              type="text"
                              className="form-control form-control-sm border-0 bg-transparent"
-                             placeholder="Search teachers..."
+                             placeholder={t('admin.tables.searchTeachers')}
                              style={{ width: 200 }}
                              value={teacherSearch}
                              onChange={(e) => setTeacherSearch(e.target.value)}
@@ -945,13 +945,13 @@ export default function AdminDashboard() {
                              className="btn btn-sm btn-light border d-flex align-items-center gap-2"
                              onClick={() => setTeachersShowColDropdown(!teachersShowColDropdown)}
                            >
-                               <i className="bi bi-columns-gap"></i> Columns
+                               <i className="bi bi-columns-gap"></i> {t('admin.common.manageColumns')}
                              </button>
   
                            {teachersShowColDropdown && (
                              <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                 <span className="fw-bold small">Manage Columns</span>
+                                 <span className="fw-bold small">{t('admin.common.manageColumns')}</span>
                                  <button className="btn-close" style={{fontSize: '0.6rem'}} onClick={() => setTeachersShowColDropdown(false)}></button>
                                </div>
                                {teacherFields.map(([key, label]) => (
@@ -977,7 +977,7 @@ export default function AdminDashboard() {
                  }
                >
                    {filteredTeachers.length === 0 ? (
-                     <EmptyState title="No Records" description="No teacher records found for this unit." />
+                     <EmptyState title={t('admin.common.noRecords')} description={t('admin.tables.noTeacherRecords')} />
                    ) : (
                      <div className="table-responsive professional-table">
                        <table className="table table-hover align-middle">
@@ -1039,7 +1039,7 @@ export default function AdminDashboard() {
                  toolbar={
                    <Toolbar
                      left={
-                       <h6 className="mb-0 text-dark fw-bold">Student Enrollment</h6>
+                       <h6 className="mb-0 text-dark fw-bold">{t('admin.dashboard.studentEnrollment')}</h6>
                      }
                      right={
                        <div className="d-flex align-items-center gap-3">
@@ -1048,21 +1048,21 @@ export default function AdminDashboard() {
                            <input
                              type="text"
                              className="form-control form-control-sm border-0 bg-transparent"
-                             placeholder="Search students..."
+                             placeholder={t('admin.tables.searchStudents')}
                              style={{ width: 180 }}
                              value={studentSearch}
                              onChange={(e) => setStudentSearch(e.target.value)}
                            />
                          </div>
                          <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
-                           <span className="small text-muted fw-bold text-nowrap">Year:</span>
+                           <span className="small text-muted fw-bold text-nowrap">{t('admin.dashboard.year')}:</span>
                            <select
                              value={studentsYear}
                              onChange={(e) => setStudentsYear(e.target.value)}
                              className="form-select form-select-sm border-0 bg-transparent w-auto py-0"
                              style={{ fontSize: '0.75rem' }}
                            >
-                             <option value="">All</option>
+                             <option value="">{t('admin.common.select')}</option>
                              {allStudentYears.map(y => <option key={y} value={y}>{y}</option>)}
                            </select>
                          </div>
@@ -1071,7 +1071,7 @@ export default function AdminDashboard() {
                             className="btn btn-sm btn-light border d-flex align-items-center gap-2"
                             onClick={() => setStudentsShowColDropdown(!studentsShowColDropdown)}
                           >
-                            <i className="bi bi-columns-gap"></i> Columns
+                            <i className="bi bi-columns-gap"></i> {t('admin.common.manageColumns')}
                           </button>
                           {studentsShowColDropdown && (
                             <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
@@ -1102,7 +1102,7 @@ export default function AdminDashboard() {
                  }
                >
                    {filteredStudents.length === 0 ? (
-                     <EmptyState title="No Records" description="No student records found." />
+                     <EmptyState title={t('admin.common.noRecords')} description={t('admin.tables.noStudentRecords')} />
                    ) : (
                      <div className="table-responsive professional-table">
                        <table className="table table-hover align-middle">
@@ -1159,7 +1159,7 @@ export default function AdminDashboard() {
                     selectedSchoolTab === 'banks' ? 'bi-bank text-warning' :
                     'bi-shield-shaded text-danger'
                   }`}></i>
-                  <span>{selectedSchoolTab.charAt(0).toUpperCase() + selectedSchoolTab.slice(1)} Registry</span>
+                  <span>{t(`admin.tables.${selectedSchoolTab}Registry`)}</span>
                 </div>
               }>
                 <DynamicDropdownTable
@@ -1175,12 +1175,12 @@ export default function AdminDashboard() {
   const renderDashboardMain = () => (
     <div className="dashboard-main-view">
       <div className="section-header-pro">
-        <h3>School Overview</h3>
-        <p>Monitor and manage all MKSSS educational units</p>
+        <h3>{t('admin.dashboard.title')}</h3>
+        <p>{t('admin.dashboard.monitorManageUnits')}</p>
       </div>
 
       <div className="import-units-section mb-4">
-        <AdminCard header="Import Units from Excel">
+        <AdminCard header={t('admin.import.title')}>
           {importMessage && (
             <div
               className={`alert ${
@@ -1198,7 +1198,7 @@ export default function AdminDashboard() {
           >
             <div className="flex-grow-1" style={{ minWidth: "250px" }}>
               <label className="form-label small fw-bold text-muted mb-1">
-                Select Excel File (.xlsx / .xls)
+                {t('admin.import.excelFile')}
               </label>
               <input
                 type="file"
@@ -1220,12 +1220,12 @@ export default function AdminDashboard() {
                     role="status"
                     aria-hidden="true"
                   ></span>
-                  Importing...
+                  {t('admin.import.importing')}
                 </>
               ) : (
                 <>
                   <i className="bi bi-file-earmark-excel me-2"></i>
-                  Import Units
+                  {t('admin.dashboard.importUnits')}
                 </>
               )}
             </button>
@@ -1238,7 +1238,7 @@ export default function AdminDashboard() {
           <div className="col-12 text-center py-5">
             <div className="premium-loader">
               <div className="spinner-border text-primary" role="status"></div>
-              <p className="mt-2 text-muted">Loading schools...</p>
+              <p className="mt-2 text-muted">{t('admin.dashboard.loadingSchools')}</p>
             </div>
           </div>
         ) : (
@@ -1265,7 +1265,7 @@ export default function AdminDashboard() {
                          </div>
                          <div className="stat-info">
                            <span className="stat-count">{unit.staff_count || 0}</span>
-                           <span className="stat-label">Staff</span>
+                           <span className="stat-label">{t('admin.common.staff')}</span>
                          </div>
                        </div>
                        <div className="stat-item">
@@ -1274,13 +1274,13 @@ export default function AdminDashboard() {
                          </div>
                          <div className="stat-info">
                            <span className="stat-count">{unit.student_count || 0}</span>
-                           <span className="stat-label">Students</span>
+                           <span className="stat-label">{t('admin.common.students')}</span>
                          </div>
                        </div>
                      </div>
                    </div>
                    <div className="card-footer-pro">
-                     <span>View Institutional Details</span>
+                     <span>{t('admin.dashboard.viewDetails')}</span>
                      <i className="bi bi-arrow-right-short"></i>
                    </div>
                 </div>
@@ -1313,28 +1313,28 @@ export default function AdminDashboard() {
                   <AdminCard header={
                     <div className="d-flex align-items-center gap-2">
                       <i className="bi bi-megaphone-fill text-primary"></i>
-                      <span>Official Announcement</span>
+                      <span>{t('admin.notifications.title')}</span>
                     </div>
                   }>
                     <form onSubmit={addNotification}>
                       <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">RECEIVER ROLE</label>
+                        <label className="form-label small fw-bold text-muted">{t('admin.notifications.receiverRole')}</label>
                         <select className="form-select border-primary-subtle" value={notifRole} onChange={(e) => setNotifRole(e.target.value)}>
                           <option value="principal">Principal</option>
                           <option value="teacher">Teacher</option>
                         </select>
                       </div>
                       <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">TITLE</label>
+                        <label className="form-label small fw-bold text-muted">{t('admin.notifications.messageTitle')}</label>
                         <input type="text" className="form-control" value={notifTitle} onChange={(e) => setNotifTitle(e.target.value)} required />
                       </div>
                       <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">MESSAGE</label>
+                        <label className="form-label small fw-bold text-muted">{t('admin.notifications.message')}</label>
                         <textarea className="form-control" rows={4} value={notifMsg} onChange={(e) => setNotifMsg(e.target.value)} required />
                       </div>
                       <button className="btn btn-primary w-100 py-2 shadow-sm" disabled={notifLoading} type="submit">
                         {notifLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-send me-2"></i>}
-                        Dispatch Notification
+                        {t('admin.notifications.dispatchNotification')}
                       </button>
                     </form>
                   </AdminCard>
@@ -1348,41 +1348,41 @@ export default function AdminDashboard() {
                   <AdminCard header={
                     <div className="d-flex align-items-center gap-2">
                       <i className="bi bi-file-earmark-plus-fill text-success"></i>
-                      <span>Data Collection Campaign</span>
+                      <span>{t('admin.notifications.dataCampaign')}</span>
                     </div>
                   }>
                     <form onSubmit={addForm}>
                       <div className="row g-3">
                         <div className="col-md-6">
-                          <label className="form-label small fw-bold text-muted">TARGET ROLE</label>
+                          <label className="form-label small fw-bold text-muted">{t('admin.notifications.targetRole')}</label>
                           <select className="form-select border-success-subtle" value={formRole} onChange={(e) => setFormRole(e.target.value)}>
                             <option value="principal">Principal</option>
                             <option value="teacher">Teacher</option>
                           </select>
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label small fw-bold text-muted">DEADLINE</label>
+                          <label className="form-label small fw-bold text-muted">{t('admin.notifications.deadline')}</label>
                           <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} />
                         </div>
                         <div className="col-md-12">
-                          <label className="form-label small fw-bold text-muted">FORM TITLE</label>
+                          <label className="form-label small fw-bold text-muted">{t('admin.notifications.formTitle')}</label>
                           <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
                         </div>
                         <div className="col-md-12">
                           <div className="d-flex justify-content-between align-items-center mb-2">
-                            <label className="form-label small fw-bold text-muted mb-0">QUESTIONS</label>
-                            <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addFormQuestion}>+ Add More</button>
+                            <label className="form-label small fw-bold text-muted mb-0">{t('admin.notifications.questions')}</label>
+                            <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addFormQuestion}>+ {t('admin.notifications.addMore')}</button>
                           </div>
                           {formQuestions.map((q, idx) => (
                             <div key={idx} className="p-3 border rounded bg-light mb-2 shadow-sm">
-                              <input placeholder="Enter question text..." className="form-control mb-2" value={q.question_text} required onChange={(e) => handleQuestionChange(idx, "question_text", e.target.value)} />
+                              <input placeholder={t('admin.notifications.enterQuestionText')} className="form-control mb-2" value={q.question_text} required onChange={(e) => handleQuestionChange(idx, "question_text", e.target.value)} />
                               <div className="d-flex gap-2">
                                 <select className="form-select w-auto" value={q.question_type} onChange={(e) => handleQuestionChange(idx, "question_type", e.target.value)}>
-                                  <option value="text">Input Text</option>
-                                  <option value="mcq">Multiple Choice</option>
+                                  <option value="text">{t('admin.notifications.inputText')}</option>
+                                  <option value="mcq">{t('admin.notifications.multipleChoice')}</option>
                                 </select>
                                 {q.question_type === "mcq" && (
-                                  <input placeholder="Options (comma separated)" className="form-control" value={q.options} onChange={(e) => handleQuestionChange(idx, "options", e.target.value)} />
+                                  <input placeholder={t('admin.notifications.optionsCommaSeparated')} className="form-control" value={q.options} onChange={(e) => handleQuestionChange(idx, "options", e.target.value)} />
                                 )}
                                 <button type="button" className="btn btn-outline-danger" onClick={() => removeFormQuestion(idx)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
                               </div>
@@ -1392,7 +1392,7 @@ export default function AdminDashboard() {
                         <div className="col-md-12 mt-3">
                           <button className="btn btn-success w-100 py-2 shadow-sm" disabled={formLoading} type="submit">
                             {formLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-rocket-takeoff me-2"></i>}
-                            Launch Campaign
+                            {t('admin.notifications.launchCampaign')}
                           </button>
                         </div>
                       </div>
@@ -1408,14 +1408,14 @@ export default function AdminDashboard() {
                   <AdminCard header={
                     <div className="d-flex align-items-center gap-2">
                       <i className="bi bi-clock-history text-info"></i>
-                      <span>Recent Communication Registry</span>
+                      <span>{t('admin.notifications.recentRegistry')}</span>
                     </div>
                   }>
                     <div className="list-group list-group-flush professional-list">
                       {notifications.length === 0 && forms.length === 0 ? (
                         <div className="text-center py-5">
                           <i className="bi bi-inbox text-muted fs-1"></i>
-                          <p className="text-muted mt-2">No recent activity found</p>
+                          <p className="text-muted mt-2">{t('admin.notifications.noRecentActivity')}</p>
                         </div>
                       ) : (
                         <>
@@ -1423,7 +1423,7 @@ export default function AdminDashboard() {
                             <div key={n.id} className="list-group-item py-4 border-bottom">
                               <div className="d-flex w-100 justify-content-between align-items-center mb-2">
                                 <h6 className="mb-0 fw-bold">{n.title}</h6>
-                                <span className="badge bg-soft-primary text-primary px-3 py-2">NOTIFICATION</span>
+                                <span className="badge bg-soft-primary text-primary px-3 py-2">{t('admin.notifications.notification')}</span>
                               </div>
                               <p className="mb-2 text-muted small lh-lg">{n.message}</p>
                               <div className="d-flex gap-3 small text-muted">
@@ -1436,11 +1436,11 @@ export default function AdminDashboard() {
                             <div key={f.id} className="list-group-item py-4 border-bottom">
                               <div className="d-flex w-100 justify-content-between align-items-center mb-2">
                                 <h6 className="mb-0 fw-bold text-success">{f.title}</h6>
-                                <span className="badge bg-soft-success text-success px-3 py-2">ACTIVE FORM</span>
+                                <span className="badge bg-soft-success text-success px-3 py-2">{t('admin.notifications.activeForm')}</span>
                               </div>
                               <div className="d-flex justify-content-between align-items-center mt-3">
-                                <span className="text-danger small fw-bold"><i className="bi bi-calendar-event me-1"></i> Deadline: {f.deadline ? new Date(f.deadline).toLocaleDateString() : 'No limit'}</span>
-                                <button className="btn btn-sm btn-outline-success px-3" onClick={() => window.open(`http://localhost:3000/forms/${f.id}`, '_blank')}>View Form</button>
+                                <span className="text-danger small fw-bold"><i className="bi bi-calendar-event me-1"></i> {t('admin.notifications.deadline')}: {f.deadline ? new Date(f.deadline).toLocaleDateString() : t('admin.notifications.noLimit')}</span>
+                                <button className="btn btn-sm btn-outline-success px-3" onClick={() => window.open(`http://localhost:3000/forms/${f.id}`, '_blank')}>{t('admin.notifications.viewForm')}</button>
                               </div>
                             </div>
                           ))}
@@ -1489,7 +1489,7 @@ export default function AdminDashboard() {
         {loading || unitLoading ? (
           <div className="d-flex flex-column align-items-center justify-content-center py-5">
             <div className="spinner-grow text-primary" role="status"></div>
-            <span className="mt-3 text-muted fw-bold">Syncing Dashboard Data...</span>
+            <span className="mt-3 text-muted fw-bold">{t('admin.dashboard.syncingData')}</span>
           </div>
         ) : error ? (
           <div className="alert alert-custom-danger d-flex align-items-center" role="alert">

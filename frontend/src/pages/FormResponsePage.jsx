@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ChatWidget from '../components/ChatWidget';
 
 export default function FormResponsePage() {
   const { formId } = useParams();
+  const { i18n } = useTranslation();
   const [form, setForm] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const handleLangToggle = () => {
+    const newLng = i18n.language === 'en' ? 'mr' : 'en';
+    i18n.changeLanguage(newLng);
+    localStorage.setItem('appLanguage', newLng);
+  };
 
   // Fetch form details (for deadline, title, etc)
   useEffect(() => {
@@ -65,7 +73,13 @@ export default function FormResponsePage() {
 
   return (
     <div className="container mt-3">
-      <h3>{form ? form.title : 'Fill Form'}</h3>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h3>{form ? form.title : 'Fill Form'}</h3>
+        <button className="btn btn-sm btn-outline-secondary" onClick={handleLangToggle}>
+          <i className="fas fa-globe me-1"></i>
+          {i18n.language === 'en' ? 'मराठी' : 'English'}
+        </button>
+      </div>
       {form && isExpired(form) ? (
         <div style={{ color: 'red', fontWeight: 600, fontSize: '1.2em', margin: '24px 0' }}>
           This form's deadline has passed. You cannot fill this form.

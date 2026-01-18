@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import { Bar, Pie, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -30,6 +31,7 @@ ChartJS.register(
 );
 
 export default function AdminCharts({ units }) {
+  const { t } = useTranslation();
   const [selectedUnitId, setSelectedUnitId] = useState(
     units?.[0]?.unit_id || ""
   );
@@ -141,7 +143,7 @@ export default function AdminCharts({ units }) {
       <AdminCard header={
         <div className="d-flex align-items-center gap-2">
           <i className="bi bi-graph-up text-primary"></i>
-          <span>Institutional Analytics</span>
+          <span>{t('admin.charts.title')}</span>
         </div>
       } className="mb-3">
         <div className="row align-items-center">
@@ -149,7 +151,7 @@ export default function AdminCharts({ units }) {
             <div className="d-flex align-items-center justify-content-between gap-3">
               <p className="text-muted small mb-0">
                 <i className="bi bi-info-circle me-1"></i>
-                Select a school unit to visualize performance and student demographics.
+                {t('admin.charts.selectSchool')}
               </p>
               <select
                 className="form-select border-primary-subtle"

@@ -1,17 +1,19 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from './DashboardLayout';
 
 export default function ClerkLayout(props) {
+      const { t } = useTranslation();
       const sidebarItems = [
-        { key: "dashboard", label: "Dashboard", icon: "bi-speedometer2" },
-        { key: "profile", label: "Profile", icon: "bi-person" },
-        { key: "fees", label: "Student Fees", icon: "bi-cash-stack" },
-        { key: "salaries", label: "Teacher Salaries", icon: "bi-wallet2" },
-        { key: "retirements", label: "Retirements", icon: "bi-person-x" },
-        { key: "addStudent", label: "Add Student", icon: "bi-person-plus" },
-        { key: "capacity", label: "Capacity", icon: "bi-building-up" },
-        { key: "fire-safety", label: "Fire Safety", icon: "bi-fire" },
-        { key: "physical-safety", label: "Physical Safety", icon: "bi-shield-check" },
+        { key: "dashboard", label: t('admin.layout.dashboard'), icon: "bi-speedometer2" },
+        { key: "profile", label: t('clerk.profile'), icon: "bi-person" },
+        { key: "fees", label: t('clerk.fees'), icon: "bi-cash-stack" },
+        { key: "salaries", label: t('clerk.salaries'), icon: "bi-wallet2" },
+        { key: "retirements", label: t('clerk.retirements'), icon: "bi-person-x" },
+        { key: "addStudent", label: t('clerk.addStudent'), icon: "bi-person-plus" },
+        { key: "capacity", label: t('clerk.capacity'), icon: "bi-building-up" },
+        { key: "fire-safety", label: t('clerk.fireSafety'), icon: "bi-fire" },
+        { key: "physical-safety", label: t('clerk.physicalSafety'), icon: "bi-shield-check" },
       ];
 
     return (

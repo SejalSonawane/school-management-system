@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function AdminUnitImport() {
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -16,7 +18,7 @@ export default function AdminUnitImport() {
     setMessage("");
 
     if (!file) {
-      setMessage("Please select an Excel file (.xlsx or .xls).");
+      setMessage(t('admin.import.selectFile'));
       return;
     }
 
@@ -37,22 +39,22 @@ export default function AdminUnitImport() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        let msg = data.message || "Failed to import units.";
+        let msg = data.message || t('admin.import.failedImport');
         if (Array.isArray(data.missingHeaders) && data.missingHeaders.length) {
-          msg += " Missing headers: " + data.missingHeaders.join(", ");
+          msg += " " + t('admin.import.missingHeaders') + ": " + data.missingHeaders.join(", ");
         }
         throw new Error(msg);
       }
 
       setMessage(
         data.importedCount != null
-          ? `Imported ${data.importedCount} unit(s) successfully.`
-          : "Units imported successfully."
+          ? t('admin.import.importSuccess', { count: data.importedCount })
+          : t('admin.import.importSuccess2')
       );
       setFile(null);
       e.target.reset();
     } catch (err) {
-      setMessage(err.message || "Failed to import units.");
+      setMessage(err.message || t('admin.import.failedImport'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export default function AdminUnitImport() {
   return (
     <div className="admin-unit-import section-card mt-4">
       <div className="section-card__header">
-        <h3 className="section-card__title">Import Units from Excel</h3>
+        <h3 className="section-card__title">{t('admin.import.title')}</h3>
       </div>
 
       <div className="section-card__body">
@@ -74,7 +76,7 @@ export default function AdminUnitImport() {
         <form onSubmit={handleSubmit}>
           <div className="row align-items-end">
             <div className="col-md-6 mb-3">
-              <label className="form-label">Excel File (.xlsx or .xls)</label>
+              <label className="form-label">{t('admin.import.excelFile')}</label>
               <input
                 type="file"
                 className="form-control"
@@ -88,14 +90,13 @@ export default function AdminUnitImport() {
                 className="btn btn-primary"
                 disabled={loading}
               >
-                {loading ? "Importing..." : "Import Units"}
+                {loading ? t('admin.import.importing') : t('admin.import.importBtn')}
               </button>
             </div>
           </div>
 
           <p className="text-muted" style={{ fontSize: "0.85rem" }}>
-  The Excel sheet must use these exact column names in the header row
-  (spelling and underscores must match exactly):
+  {t('admin.import.columnHeader')}
   <br />
   <strong>
     unit_id, semis_no, dcf_no, nmms_no, scholarship_code,
@@ -108,8 +109,7 @@ export default function AdminUnitImport() {
   </strong>
   .
   <br />
-  Optional extra columns (also must match names exactly) to fill related
-  tables:
+  {t('admin.import.optionalColumns')}
   <br />
   <strong>
     budget_fiscal_year, budget_version, budget_income, budget_expenses,

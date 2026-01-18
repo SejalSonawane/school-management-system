@@ -4,10 +4,16 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 const Notifications = ({ title = "Notifications", role = "principal" }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleLangToggle = () => {
+    const newLng = i18n.language === 'en' ? 'mr' : 'en';
+    i18n.changeLanguage(newLng);
+    localStorage.setItem('appLanguage', newLng);
+  };
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -99,7 +105,13 @@ const Notifications = ({ title = "Notifications", role = "principal" }) => {
 
   return (
     <div className="container p-4">
-      <h2 className="mb-4">{title}</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>{title}</h2>
+        <button className="btn btn-sm btn-outline-secondary" onClick={handleLangToggle}>
+          <i className="fas fa-globe me-1"></i>
+          {i18n.language === 'en' ? 'मराठी' : 'English'}
+        </button>
+      </div>
       <div className="notifications-list">
         {notifications.length === 0 ? (
           <div className="alert alert-info">

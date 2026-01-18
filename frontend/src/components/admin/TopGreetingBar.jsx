@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { jwtDecode } from "jwt-decode";
 import './TopGreetingBar.scss';
 
 export default function TopGreetingBar({ schoolName, semisId, customGreeting }) {
+  const { t } = useTranslation();
   const [displayName, setDisplayName] = useState("Admin");
   
   useEffect(() => {
@@ -23,9 +25,9 @@ export default function TopGreetingBar({ schoolName, semisId, customGreeting }) 
       <div className="banner-content">
         <div className="greeting-text">
           <h1>
-            {customGreeting || `Welcome, ${displayName} 👋`} 
+            {customGreeting || `${t('principal.welcome')}, ${displayName} 👋`} 
             <span className="divider">|</span> 
-            <span className="subtitle">MKSSS Dashboard</span>
+            <span className="subtitle">{t('admin.common.schoolDashboard')}</span>
           </h1>
           {schoolName && (
             <div className="context-info">

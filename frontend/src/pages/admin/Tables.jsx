@@ -136,14 +136,14 @@ export default function Tables() {
           <AdminCard header={
             <div className="d-flex align-items-center gap-2">
               <i className="bi bi-building-gear text-primary"></i>
-              <span>Unit Configuration & Selection</span>
+              <span>{t('admin.tables.title')}</span>
             </div>
           } className="mb-4">
             <div className="row align-items-center">
               <div className="col-md-8">
                 <p className="text-muted small mb-3">
                   <i className="bi bi-info-circle me-1"></i>
-                  Analyze institutional data across your network by selecting a specific unit below.
+                  {t('admin.tables.analyzeData')}
                 </p>
                 <div className="d-flex align-items-center gap-3">
                   <select
@@ -194,7 +194,7 @@ export default function Tables() {
                           <input
                             type="text"
                             className="form-control form-control-sm border-0 bg-light"
-                            placeholder="Search teachers..."
+                            placeholder={t('admin.tables.searchTeachers')}
                             value={searchTeachers}
                             onChange={(e) => setSearchTeachers(e.target.value)}
                             style={{ minWidth: 250 }}
@@ -269,7 +269,7 @@ export default function Tables() {
               <AdminCard header={
                 <div className="d-flex align-items-center gap-2">
                   <i className="bi bi-mortarboard-fill text-success"></i>
-                  <span>Student Enrollment</span>
+                  <span>{t('admin.dashboard.studentEnrollment')}</span>
                 </div>
               }>
                 <TableContainer
@@ -282,7 +282,7 @@ export default function Tables() {
                           <input
                             type="text"
                             className="form-control form-control-sm border-0 bg-light"
-                            placeholder="Search students..."
+                            placeholder={t('admin.tables.searchStudents')}
                             value={searchStudents}
                             onChange={(e) => setSearchStudents(e.target.value)}
                             style={{ minWidth: 250 }}
@@ -351,7 +351,7 @@ export default function Tables() {
               <AdminCard header={
                 <div className="d-flex align-items-center gap-2">
                   <i className="bi bi-file-earmark-check-fill text-info"></i>
-                  <span>Form Responses Registry</span>
+                  <span>{t('admin.tables.formResponseRegistry')}</span>
                 </div>
               }>
                 <TableContainer title={""}>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import ChatWidget from "../components/ChatWidget";
 import AdminLayout from "../components/admin/AdminLayout";
 import AdminCard from "../components/admin/AdminCard";
@@ -8,6 +9,7 @@ import TableContainer from "../components/admin/TableContainer";
 import EmptyState from "../components/admin/EmptyState";
 
 export default function AdminNotificationsPage() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [forms, setForms] = useState([]);
   const [filledForms, setFilledForms] = useState([]);
@@ -250,10 +252,10 @@ export default function AdminNotificationsPage() {
       <div className="notifications-page erp-container">
         <TabNavigation
           tabs={[
-            { id: "send_notification", label: "Send Notification", icon: "bi-send-fill" },
-            { id: "create_form", label: "Create Form", icon: "bi-file-earmark-plus-fill" },
+            { id: "send_notification", label: t('admin.notifications.dispatchNotification'), icon: "bi-send-fill" },
+            { id: "create_form", label: t('admin.notifications.dataCampaign'), icon: "bi-file-earmark-plus-fill" },
             { id: "forms", label: "Form Responses", icon: "bi-file-earmark-check" },
-            { id: "active_forms", label: "Active Forms", icon: "bi-card-list" },
+            { id: "active_forms", label: t('admin.notifications.activeForm'), icon: "bi-card-list" },
           ]}
           activeTab={selectedTab}
           onTabChange={setSelectedTab}
@@ -266,13 +268,13 @@ export default function AdminNotificationsPage() {
                 <AdminCard header={
                   <div className="d-flex align-items-center gap-2">
                     <i className="bi bi-megaphone-fill text-primary"></i>
-                    <span>Official Announcement</span>
+                    <span>{t('admin.notifications.title')}</span>
                   </div>
                 }>
                   <form onSubmit={sendNotification}>
                     <div className="row g-3">
                       <div className="col-md-6">
-                        <label className="form-label small fw-bold text-muted">TARGET AUDIENCE</label>
+                        <label className="form-label small fw-bold text-muted">{t('admin.notifications.targetRole')}</label>
                         <select className="form-select border-primary-subtle" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
                           <option value="principal">Principals (Heads of Schools)</option>
                           <option value="teacher">Teachers (Staff Members)</option>
@@ -333,11 +335,11 @@ export default function AdminNotificationsPage() {
 
                       <div className="col-md-12">
                         <label className="form-label small fw-bold text-muted">ANNOUNCEMENT TITLE</label>
-                        <input type="text" className="form-control" placeholder="Subject of the notification" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                        <input type="text" className="form-control" placeholder={t('admin.notifications.messageTitle')} value={title} onChange={(e) => setTitle(e.target.value)} required />
                       </div>
                       <div className="col-md-12">
                         <label className="form-label small fw-bold text-muted">MESSAGE CONTENT</label>
-                        <textarea className="form-control" rows={5} placeholder="Type your detailed message here..." value={message} onChange={(e) => setMessage(e.target.value)} required />
+                        <textarea className="form-control" rows={5} placeholder={t('admin.notifications.message')} value={message} onChange={(e) => setMessage(e.target.value)} required />
                       </div>
                       <div className="col-md-12">
                         <button className="btn btn-primary btn-lg w-100 shadow-sm" type="submit">
@@ -357,13 +359,13 @@ export default function AdminNotificationsPage() {
                 <AdminCard header={
                   <div className="d-flex align-items-center gap-2">
                     <i className="bi bi-file-earmark-spreadsheet-fill text-success"></i>
-                    <span>Data Collection Campaign</span>
+                    <span>{t('admin.notifications.dataCampaign')}</span>
                   </div>
                 }>
                   <form onSubmit={createFormAndNotify}>
                     <div className="row g-3">
                       <div className="col-md-6">
-                        <label className="form-label small fw-bold text-muted">TARGET ROLE</label>
+                        <label className="form-label small fw-bold text-muted">{t('admin.notifications.targetRole')}</label>
                         <select className="form-select border-success-subtle" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
                           <option value="principal">Principals</option>
                           <option value="teacher">Teachers</option>
@@ -422,19 +424,19 @@ export default function AdminNotificationsPage() {
                       )}
 
                       <div className="col-md-6">
-                        <label className="form-label small fw-bold text-muted">SUBMISSION DEADLINE</label>
+                        <label className="form-label small fw-bold text-muted">{t('admin.notifications.deadline')}</label>
                         <input type="datetime-local" className="form-control border-danger-subtle" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} required />
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label small fw-bold text-muted">FORM TITLE</label>
+                        <label className="form-label small fw-bold text-muted">{t('admin.notifications.formTitle')}</label>
                         <input type="text" className="form-control" placeholder="e.g. Monthly Attendance Registry" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
                       </div>
                       
                       <div className="col-md-12">
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                          <label className="form-label small fw-bold text-muted mb-0">QUESTIONNAIRE DESIGN</label>
+                          <label className="form-label small fw-bold text-muted mb-0">{t('admin.notifications.questions')}</label>
                           <button type="button" className="btn btn-sm btn-outline-success" onClick={addQuestion}>
-                            <i className="bi bi-plus-lg me-1"></i> Add Question
+                            <i className="bi bi-plus-lg me-1"></i> {t('admin.notifications.addMore')}
                           </button>
                         </div>
                         {formQuestions.map((q, i) => (
@@ -453,16 +455,16 @@ export default function AdminNotificationsPage() {
                                 value={q.question_type}
                                 onChange={(e) => updateQuestion(i, 'question_type', e.target.value)}
                               >
-                                <option value="text">Short Text</option>
+                                <option value="text">{t('admin.notifications.inputText')}</option>
                                 <option value="number">Numeric Value</option>
                                 <option value="date">Date Entry</option>
-                                <option value="select">Multiple Choice (MCQ)</option>
+                                <option value="select">{t('admin.notifications.multipleChoice')}</option>
                               </select>
                               {q.question_type === 'select' && (
                                 <input
                                   type="text"
                                   className="form-control"
-                                  placeholder="Option A, Option B, Option C..."
+                                  placeholder={t('admin.notifications.optionsCommaSeparated')}
                                   value={q.options}
                                   onChange={(e) => updateQuestion(i, 'options', e.target.value)}
                                   required
@@ -477,7 +479,7 @@ export default function AdminNotificationsPage() {
                       </div>
                       <div className="col-md-12 mt-4">
                         <button type="submit" className="btn btn-success btn-lg w-100 shadow-sm">
-                          <i className="bi bi-cloud-upload me-2"></i> Deploy Form & Notify Recipients
+                          <i className="bi bi-cloud-upload me-2"></i> {t('admin.notifications.launchCampaign')}
                         </button>
                       </div>
                     </div>
@@ -493,7 +495,7 @@ export default function AdminNotificationsPage() {
                 <AdminCard header={
                   <div className="d-flex align-items-center gap-2">
                     <i className="bi bi-file-earmark-check-fill text-info"></i>
-                    <span>Form Responses Registry</span>
+                    <span>{t('admin.notifications.formResponseRegistry')}</span>
                   </div>
                 }>
                   <TableContainer title={""}>

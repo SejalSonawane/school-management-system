@@ -91,10 +91,10 @@ export default function DashboardLayout({
                   </div>
                   <div className="dropdown-divider"></div>
                   <button className="dropdown-link" onClick={() => { setShowDropdown(false); navigate("/admin/profile"); }}>
-                    <i className="bi bi-person"></i> Profile
+                    <i className="bi bi-person"></i> {t('principal.profile')}
                   </button>
                   <button className="dropdown-link logout" onClick={handleLogout}>
-                    <i className="bi bi-box-arrow-right"></i> Logout
+                    <i className="bi bi-box-arrow-right"></i> {t('logout')}
                   </button>
                 </div>
               )}
